@@ -1,44 +1,42 @@
-# 🌊 FathomNet CLEF 2026 Solution
+# 🌊 FathomNet CLEF 2026 Solution: 0.0716+ Score Strategy
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-Latest-red)](https://pytorch.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Ultralytics](https://img.shields.io/badge/Ultralytics-RTDETR-blueviolet.svg)](https://github.com/ultralytics/ultralytics)
 
-> **Project for:** LifeCLEF 2026 & CVPR-FGVC Workshop
-> **Task:** Underwater Image Classification / Object Detection
+> **Competition:** [FathomNet CLEF 2026 @ LifeCLEF & CVPR-FGVC](https://www.life-clef.org/2026/fathomnet)
+> **Final Score:** 0.0716 (Top XX% Strategy)
+> **Location:** Shanghai, China (2026-05-12)
 
-## 📝 Project Overview
+This repository contains the complete source code for our submission to the FathomNet CLEF 2026 challenge. Our solution leverages **RT-DETR** for real-time underwater object detection, combined with advanced ensemble techniques including **Pseudo-Labeling** and **Weighted Boxes Fusion (WBF)** to achieve high accuracy in fine-grained marine species classification.
 
-This repository contains the solution and experimental code for the **FathomNet CLEF 2026** competition. The goal is to classify marine species from underwater imagery, addressing challenges such as low visibility, class imbalance, and fine-grained visual categorization.
+## 🚀 Core Methodology
 
-### Key Features
-- **Data Preprocessing:** Custom pipelines for handling underwater image augmentation.
-- **Model Architecture:** Implementation of [Insert Model Name, e.g., ResNet50 / ViT / SwinTransformer].
-- **Training Strategy:** Usage of [Insert Strategy, e.g., MixUp, CutMix, Focal Loss] to handle class imbalance.
+Our pipeline is designed to handle the challenges of underwater imagery, such as low visibility and class imbalance.
 
----
+### 1. Data Preprocessing & Augmentation
+- **FathomNet Dataset:** Converted from COCO JSON format to YOLOv8/RT-DETR format.
+- **Resolution:** Trained at **1024x1024** to capture fine details of small marine organisms.
+- **Cleaning:** Automated removal of corrupted or unlabeled images.
 
-## 📂 Dataset
+### 2. Teacher-Student Distillation (Semi-Supervised Learning)
+To overcome the limited labeled data, we implemented a self-training loop:
+- **Teacher Model:** A pre-trained RT-DETR model (or LLaVA-guided picks) used to infer on the unlabeled test set.
+- **Pseudo-Labeling:** High-confidence predictions (`conf > 0.25`) from the teacher were used as "hard" labels.
+- **Student Training:** The student model (RT-DETR-l) was trained on the merged dataset of official training data + pseudo-labeled test data.
 
-The dataset used is from the **FathomNet** challenge.
-- **Source:** [FathomNet Official Website](https://www.fathomnet.org/)
-- **Classes:** [Number] distinct marine species categories.
-- **Structure:**
-    ```text
-    data/
-    ├── train/
-    │   ├── class_1/
-    │   └── class_2/
-    └── val/
-    ```
+### 3. Inference & Ensemble
+- **TTA (Test Time Augmentation):** Enabled during inference to boost mAP.
+- **WBF (Weighted Boxes Fusion):** Fused predictions from two models (`0.0680` and `0.0716` checkpoints) with different weights to suppress false positives and refine bounding boxes.
 
----
+## 📂 Repository Structure
 
-## 🚀 Getting Started
-
-### 1. Environment Setup
-We recommend using Conda for environment management.
-```bash
-conda create -n fathomnet python=3.9
-conda activate fathomnet
-pip install -r requirements.txt
+```text
+fathomnet-clef-2026/
+├── fathomnet.yaml          # Dataset configuration for Ultralytics
+├── train_pseudo.py         # Script for data fusion & training
+├── infer_tta.py            # Inference script with TTA
+├── wbf_ensemble.py         # Weighted Boxes Fusion script
+└── datasets/               # (Symlink or processed data)
+    └── fathomnet/
+        ├── images/
+        └── labels/
