@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.idea/
+.vscode/
+
+# Large/generated artifacts
+datasets/
+runs/
+weights/
+*.pt
+*.onnx
+submission*.csv
+temp_*
+
