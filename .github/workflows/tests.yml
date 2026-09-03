@@ -14,5 +14,6 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install pandas pytest
-      - run: pytest -q
-
+      # Module invocation keeps the repository root on sys.path so the
+      # top-level pipeline modules can be imported during test collection.
+      - run: python -m pytest -q
